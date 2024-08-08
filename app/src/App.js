@@ -1,7 +1,7 @@
-import { ethers } from 'ethers';
-import { useEffect, useState } from 'react';
-import deploy from './deploy';
-import Escrow from './Escrow';
+import { ethers } from "ethers";
+import { useEffect, useState } from "react";
+import deploy from "./deploy";
+import Escrow from "./Escrow";
 
 const provider = new ethers.providers.Web3Provider(window.ethereum);
 
@@ -17,7 +17,7 @@ function App() {
 
   useEffect(() => {
     async function getAccounts() {
-      const accounts = await provider.send('eth_requestAccounts', []);
+      const accounts = await provider.send("eth_requestAccounts", []);
 
       setAccount(accounts[0]);
       setSigner(provider.getSigner());
@@ -27,23 +27,20 @@ function App() {
   }, [account]);
 
   async function newContract() {
-    const beneficiary = document.getElementById('beneficiary').value;
-    const arbiter = document.getElementById('arbiter').value;
-    const value = ethers.BigNumber.from(document.getElementById('wei').value);
+    const beneficiary = document.getElementById("beneficiary").value;
+    const arbiter = document.getElementById("arbiter").value;
+    const value = ethers.utils.parseEther(document.getElementById("eth").value);
     const escrowContract = await deploy(signer, arbiter, beneficiary, value);
-
 
     const escrow = {
       address: escrowContract.address,
       arbiter,
       beneficiary,
-      value: value.toString(),
+      value: (value / ethers.utils.parseEther("1")).toString() + " ETH",
       handleApprove: async () => {
-        escrowContract.on('Approved', () => {
-          document.getElementById(escrowContract.address).className =
-            'complete';
-          document.getElementById(escrowContract.address).innerText =
-            "✓ It's been approved!";
+        escrowContract.on("Approved", () => {
+          document.getElementById(escrowContract.address).className = "complete";
+          document.getElementById(escrowContract.address).innerText = "✓ It's been approved!";
         });
 
         await approve(escrowContract, signer);
@@ -68,8 +65,8 @@ function App() {
         </label>
 
         <label>
-          Deposit Amount (in Wei)
-          <input type="text" id="wei" />
+          Deposit Amount (in ETH)
+          <input type="text" id="eth" />
         </label>
 
         <div
