@@ -21,6 +21,9 @@ function App() {
 
       setAccount(accounts[0]);
       setSigner(provider.getSigner());
+      const escrows = JSON.parse(localStorage.getItem("escrows")) || [];
+      // console.log(escrows);
+      setEscrows(escrows);
     }
 
     getAccounts();
@@ -37,17 +40,24 @@ function App() {
       arbiter,
       beneficiary,
       value: (value / ethers.utils.parseEther("1")).toString() + " ETH",
+      approved: false,
       handleApprove: async () => {
         escrowContract.on("Approved", () => {
           document.getElementById(escrowContract.address).className = "complete";
           document.getElementById(escrowContract.address).innerText = "✓ It's been approved!";
+          escrow.approved = true;
+          // localStorage.setItem("escrows", JSON.stringify([...escrows, escrow]));
         });
 
         await approve(escrowContract, signer);
+        const escrowsOld = JSON.parse(localStorage.getItem("escrows")) || [];
+        localStorage.setItem("escrows", JSON.stringify([...escrowsOld, escrow]));
       },
     };
 
     setEscrows([...escrows, escrow]);
+    localStorage.setItem("escrows", JSON.stringify([...escrows, escrow]));
+    // console.log(escrow);
   }
 
   return (
@@ -87,7 +97,7 @@ function App() {
 
         <div id="container">
           {escrows.map((escrow) => {
-            return <Escrow key={escrow.address} {...escrow} />;
+            return <Escrow key={escrow.address} {...escrow} signer={signer} />;
           })}
         </div>
       </div>
